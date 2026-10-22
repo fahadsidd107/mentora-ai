@@ -1,0 +1,8 @@
+<svg width="46" height="44" viewBox="0 0 46 44" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <title>Mentora AI</title>
+  <rect x="1" y="1" width="44" height="42" rx="10" fill="#11183A"/>
+  <path d="M10.5 12.5C15.1 12.5 18.8 14.2 23 18.1C27.2 14.2 30.9 12.5 35.5 12.5V30.8C31.1 30.8 27.3 32.1 23 35.3C18.7 32.1 14.9 30.8 10.5 30.8V12.5Z" stroke="#F7F7FF" stroke-width="2.4" stroke-linejoin="round"/>
+  <path d="M23 18.1V35.3" stroke="#90E0C0" stroke-width="2.4" stroke-linecap="round"/>
+  <path d="M15.2 18.3L19.1 22.1" stroke="#6366F1" stroke-width="2.4" stroke-linecap="round"/>
+  <path d="M30.8 18.3L26.9 22.1" stroke="#6366F1" stroke-width="2.4" stroke-linecap="round"/>
+</svg>
