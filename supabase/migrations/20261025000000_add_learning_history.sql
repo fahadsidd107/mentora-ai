@@ -24,5 +24,22 @@ create index if not exists bookmarks_user_id_idx
 create index if not exists bookmarks_companion_id_idx
   on public.bookmarks (companion_id);
 
+alter table public.bookmarks enable row level security;
+
+drop policy if exists "Users can read their own bookmarks" on public.bookmarks;
+create policy "Users can read their own bookmarks"
+  on public.bookmarks for select
+  using ((auth.jwt() ->> 'sub') = user_id);
+
+drop policy if exists "Users can create their own bookmarks" on public.bookmarks;
+create policy "Users can create their own bookmarks"
+  on public.bookmarks for insert
+  with check ((auth.jwt() ->> 'sub') = user_id);
+
+drop policy if exists "Users can delete their own bookmarks" on public.bookmarks;
+create policy "Users can delete their own bookmarks"
+  on public.bookmarks for delete
+  using ((auth.jwt() ->> 'sub') = user_id);
+
 -- Ask PostgREST to immediately refresh its table/column cache.
 notify pgrst, 'reload schema';

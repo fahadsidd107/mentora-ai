@@ -13,60 +13,64 @@ import {
 } from "@/lib/actions/companion.actions";
 import Image from "next/image";
 import CompanionsList from "@/components/CompanionsList";
+import { Bookmark, Bot, CircleAlert, History } from "lucide-react";
 
 const Profile = async () => {
   const user = await currentUser();
 
   if (!user) redirect("/sign-in");
 
-  const [companions, sessionHistory, bookmarkedCompanions] = await Promise.all([
+  const [companionsResult, sessionsResult, bookmarksResult] = await Promise.allSettled([
     getUserCompanions(user.id),
     getUserSessions(user.id),
     getBookmarkedCompanions(user.id),
   ]);
 
+  const companions = companionsResult.status === "fulfilled" ? companionsResult.value : [];
+  const sessionHistory = sessionsResult.status === "fulfilled" ? sessionsResult.value : [];
+  const bookmarkedCompanions = bookmarksResult.status === "fulfilled" ? bookmarksResult.value : [];
+  const hasDataSetupIssue = [companionsResult, sessionsResult, bookmarksResult]
+    .some((result) => result.status === "rejected");
+
   return (
-    <main className="min-lg:w-3/4">
-      <section className="flex justify-between gap-4 max-sm:flex-col items-center">
+    <main className="min-lg:w-3/4 journey-page">
+      <section className="journey-profile">
         <div className="flex gap-4 items-center">
           <Image
             src={user.imageUrl}
-            alt={user.firstName!}
+            alt={`${user.firstName ?? "Mentora"} profile`}
             width={110}
             height={110}
+            className="journey-avatar"
           />
           <div className="flex flex-col gap-2">
-            <h1 className="font-bold text-2xl">
+            <p className="journey-kicker">Your learning space</p>
+            <h1 className="font-bold text-3xl">
               {user.firstName} {user.lastName}
             </h1>
             <p className="text-sm text-muted-foreground">
-              {user.emailAddresses[0].emailAddress}
+              {user.emailAddresses[0]?.emailAddress}
             </p>
           </div>
         </div>
-        <div className="flex gap-4">
-          <div className="border border-foreground rounded-lg p-3 gap-2 flex flex-col h-fit">
-            <div className="flex gap-2 items-center">
-              <Image
-                src="/icons/check.svg"
-                alt="checkmark"
-                width={22}
-                height={22}
-              />
-              <p className="text-2xl font-bold">{sessionHistory.length}</p>
-            </div>
-            <div>Lessons completed</div>
-          </div>
-          <div className="border border-foreground rounded-lg p-3 gap-2 flex flex-col h-fit">
-            <div className="flex gap-2 items-center">
-              <Image src="/icons/cap.svg" alt="cap" width={22} height={22} />
-              <p className="text-2xl font-bold">{companions.length}</p>
-            </div>
-            <div>Companions created</div>
-          </div>
+        <div className="journey-stats">
+          <div><History /><strong>{sessionHistory.length}</strong><span>Lessons completed</span></div>
+          <div><Bot /><strong>{companions.length}</strong><span>Companions created</span></div>
+          <div><Bookmark /><strong>{bookmarkedCompanions.length}</strong><span>Saved companions</span></div>
         </div>
       </section>
-      <Accordion type="multiple">
+
+      {hasDataSetupIssue && (
+        <aside className="journey-notice" role="status">
+          <CircleAlert />
+          <div>
+            <strong>Some learning data is not available yet.</strong>
+            <p>Apply the included Supabase learning-history migration, then refresh this page.</p>
+          </div>
+        </aside>
+      )}
+
+      <Accordion type="multiple" defaultValue={["bookmarks", "recent"]} className="journey-accordion">
         <AccordionItem value="bookmarks">
           <AccordionTrigger className="text-2xl font-bold">
             Bookmarked Companions {`(${bookmarkedCompanions.length})`}
@@ -80,7 +84,7 @@ const Profile = async () => {
         </AccordionItem>
         <AccordionItem value="recent">
           <AccordionTrigger className="text-2xl font-bold">
-            Recent Sessions
+            Recent Sessions {`(${sessionHistory.length})`}
           </AccordionTrigger>
           <AccordionContent>
             <CompanionsList

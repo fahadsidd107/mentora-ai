@@ -6,7 +6,7 @@ const contact = {
   name: "Muhammad Fahad Siddiqui",
   email: "fahad@anue.eu",
   github: "https://github.com/fahadsidd107",
-  linkedin: "https://www.linkedin.com/in/muhammadfahadsiddiqui/",
+  linkedin: "https://www.linkedin.com/in/muhammad-fahad-siddiqui-595484176/",
 };
 
 const stack = ["Next.js", "Clerk", "Supabase", "Vapi", "Sentry"];

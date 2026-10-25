@@ -3,7 +3,8 @@ import { removeBookmark } from "@/lib/actions/companion.actions";
 import { addBookmark } from "@/lib/actions/companion.actions";
 import Image from "next/image";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
+import { useState, useTransition } from "react";
 
 interface CompanionCardProps {
   id: string;
@@ -12,7 +13,7 @@ interface CompanionCardProps {
   subject: string;
   duration: number;
   color: string;
-  bookmarked: boolean;
+  bookmarked?: boolean;
 }
 
 const CompanionCard = ({
@@ -25,12 +26,23 @@ const CompanionCard = ({
   bookmarked,
 }: CompanionCardProps) => {
   const pathname = usePathname();
+  const router = useRouter();
+  const [isBookmarked, setIsBookmarked] = useState(Boolean(bookmarked));
+  const [isPending, startTransition] = useTransition();
+
   const handleBookmark = async () => {
-    if (bookmarked) {
-      await removeBookmark(id, pathname);
-    } else {
-      await addBookmark(id, pathname);
-    }
+    const nextValue = !isBookmarked;
+    setIsBookmarked(nextValue);
+
+    startTransition(async () => {
+      try {
+        if (nextValue) await addBookmark(id, pathname);
+        else await removeBookmark(id, pathname);
+        router.refresh();
+      } catch {
+        setIsBookmarked(!nextValue);
+      }
+    });
   };
   return (
     <article className="companion-card" style={{ backgroundColor: color }}>
@@ -39,11 +51,13 @@ const CompanionCard = ({
         <button
           className="companion-bookmark"
           onClick={handleBookmark}
-          aria-label={bookmarked ? `Remove ${name} from bookmarks` : `Bookmark ${name}`}
+          disabled={isPending}
+          aria-pressed={isBookmarked}
+          aria-label={isBookmarked ? `Remove ${name} from bookmarks` : `Bookmark ${name}`}
         >
           <Image
             src={
-              bookmarked ? "/icons/bookmark-filled.svg" : "/icons/bookmark.svg"
+              isBookmarked ? "/icons/bookmark-filled.svg" : "/icons/bookmark.svg"
             }
             alt="bookmark"
             width={12.5}

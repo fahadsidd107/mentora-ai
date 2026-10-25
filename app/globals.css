@@ -311,6 +311,48 @@ body {
   .transcript-fade {
     @apply pointer-events-none absolute bottom-0 left-0 right-0 h-40 max-sm:h-20 bg-gradient-to-t from-background via-background/90 to-transparent z-10;
   }
+
+  .journey-profile {
+    @apply flex items-center justify-between gap-6 rounded-4xl border border-border bg-card p-6 max-lg:flex-col max-lg:items-start;
+    box-shadow: 0 20px 60px rgb(17 24 58 / 8%);
+  }
+  .journey-avatar {
+    @apply rounded-3xl border border-border object-cover;
+  }
+  .journey-kicker {
+    @apply text-xs font-bold uppercase tracking-[0.18em] text-primary;
+  }
+  .journey-profile h1::before {
+    display: none;
+  }
+  .journey-stats {
+    @apply grid grid-cols-3 gap-3 max-sm:w-full max-sm:grid-cols-1;
+  }
+  .journey-stats > div {
+    @apply grid min-w-36 grid-cols-[auto_1fr] items-center gap-x-2 rounded-2xl border border-border bg-secondary/55 p-4;
+  }
+  .journey-stats svg {
+    @apply row-span-2 size-5 text-primary;
+  }
+  .journey-stats strong {
+    @apply text-2xl leading-none;
+  }
+  .journey-stats span {
+    @apply text-xs text-muted-foreground;
+  }
+  .journey-notice {
+    @apply flex items-start gap-3 rounded-2xl border border-primary/30 bg-primary/5 px-5 py-4 text-sm;
+  }
+  .journey-notice svg {
+    @apply mt-0.5 size-5 shrink-0 text-primary;
+  }
+  .journey-notice p {
+    @apply mt-1 text-muted-foreground;
+  }
+  .journey-accordion {
+    @apply rounded-4xl border border-border bg-card px-6;
+    box-shadow: 0 20px 60px rgb(17 24 58 / 6%);
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {

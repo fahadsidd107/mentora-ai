@@ -22,7 +22,12 @@ const CompanionsList = ({ title, companions, classNames }: CompanionsListProps) 
         <article className={cn('companion-list', classNames)}>
             <h2 className="font-bold text-3xl">{title}</h2>
 
-            <Table>
+            {!companions?.length ? (
+                <div className="my-8 rounded-2xl border border-dashed border-border bg-secondary/40 px-6 py-10 text-center">
+                    <p className="font-semibold text-foreground">Nothing here yet</p>
+                    <p className="mt-1 text-sm text-muted-foreground">Your learning activity will appear here as you use Mentora.</p>
+                </div>
+            ) : <Table>
                 <TableHeader>
                     <TableRow>
                         <TableHead className="text-lg w-2/3">Lessons</TableHead>
@@ -79,7 +84,7 @@ const CompanionsList = ({ title, companions, classNames }: CompanionsListProps) 
                         </TableRow>
                     ))}
                 </TableBody>
-            </Table>
+            </Table>}
         </article>
     )
 }

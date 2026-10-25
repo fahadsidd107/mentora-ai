@@ -124,13 +124,13 @@ The server actions expect the following Supabase tables:
 
 - `companions` stores tutor configuration, ownership, subject, topic, voice, style, and duration.
 - `session_history` associates completed companion sessions with Clerk user IDs.
-- `bookmarks` associates saved companions with Clerk user IDs.
+- `bookmarks` associates saved companions with Clerk user IDs. It contains `id` (UUID primary key), `companion_id` (UUID foreign key), `user_id` (Clerk user ID text), and `created_at` (timestamp). A unique constraint on `(user_id, companion_id)` prevents duplicate saves.
 
 Foreign-key relationships should allow Supabase queries to resolve `companions:companion_id (*)` from session-history and bookmark records.
 
 For an existing Supabase project, run
 [`supabase/migrations/20261025000000_add_learning_history.sql`](supabase/migrations/20261025000000_add_learning_history.sql)
-in the Supabase SQL editor. It adds the Clerk `user_id` field expected by session history, creates the bookmarks table and foreign-key relationship, adds lookup indexes, and refreshes the PostgREST schema cache.
+in the Supabase SQL editor. It adds the Clerk `user_id` field expected by session history, creates the bookmarks table and foreign-key relationship, adds lookup indexes, enables row-level security with per-user read/write/delete policies, and refreshes the PostgREST schema cache.
 
 ## Available scripts
 
@@ -147,7 +147,7 @@ npm run lint     # Run the configured lint command
 - The public Vapi token is intentionally exposed to the browser; provider-side domain restrictions and usage limits should be configured before deployment.
 - Companion limits are checked server-side through Clerk plan and feature entitlements.
 - Sentry is configured for browser, Node.js, and edge runtimes. Replace the existing DSN and organization details before deploying under a different Sentry account.
-- Production deployments should enable Supabase Row Level Security policies that scope writes and private reads to the authenticated Clerk user.
+- The included bookmarks migration enables Supabase Row Level Security and scopes private reads and writes to the authenticated Clerk user ID contained in the JWT `sub` claim.
 
 ## What this project demonstrates
 

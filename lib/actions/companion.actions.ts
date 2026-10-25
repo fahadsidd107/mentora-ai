@@ -19,6 +19,7 @@ export const createCompanion = async (formData: CreateCompanion) => {
 }
 
 export const getAllCompanions = async ({ limit = 10, page = 1, subject, topic }: GetAllCompanions) => {
+    const { userId } = await auth();
     const supabase = createSupabaseClient();
 
     let query = supabase.from('companions').select();
@@ -38,7 +39,22 @@ export const getAllCompanions = async ({ limit = 10, page = 1, subject, topic }:
 
     if(error) throw new Error(error.message);
 
-    return companions;
+    if (!userId || companions.length === 0) return companions;
+
+    const { data: bookmarks, error: bookmarkError } = await supabase
+        .from('bookmarks')
+        .select('companion_id')
+        .eq('user_id', userId)
+        .in('companion_id', companions.map(({ id }) => id));
+
+    // Keep the library usable while a new project is waiting for the bookmarks migration.
+    if (bookmarkError) return companions.map((companion) => ({ ...companion, bookmarked: false }));
+
+    const bookmarkedIds = new Set(bookmarks.map(({ companion_id }) => companion_id));
+    return companions.map((companion) => ({
+        ...companion,
+        bookmarked: bookmarkedIds.has(companion.id),
+    }));
 }
 
 export const getCompanion = async (id: string) => {
@@ -140,24 +156,26 @@ export const newCompanionPermissions = async () => {
 // Bookmarks
 export const addBookmark = async (companionId: string, path: string) => {
   const { userId } = await auth();
-  if (!userId) return;
+  if (!userId) throw new Error("You must be signed in to save a companion.");
   const supabase = createSupabaseClient();
-  const { data, error } = await supabase.from("bookmarks").insert({
-    companion_id: companionId,
-    user_id: userId,
-  });
+  const { data, error } = await supabase
+    .from("bookmarks")
+    .upsert(
+      { companion_id: companionId, user_id: userId },
+      { onConflict: "user_id,companion_id", ignoreDuplicates: true },
+    )
+    .select("id");
   if (error) {
     throw new Error(error.message);
   }
-  // Revalidate the path to force a re-render of the page
-
   revalidatePath(path);
+  revalidatePath("/my-journey");
   return data;
 };
 
 export const removeBookmark = async (companionId: string, path: string) => {
   const { userId } = await auth();
-  if (!userId) return;
+  if (!userId) throw new Error("You must be signed in to update saved companions.");
   const supabase = createSupabaseClient();
   const { data, error } = await supabase
     .from("bookmarks")
@@ -168,19 +186,19 @@ export const removeBookmark = async (companionId: string, path: string) => {
     throw new Error(error.message);
   }
   revalidatePath(path);
+  revalidatePath("/my-journey");
   return data;
 };
 
-// It's almost the same as getUserCompanions, but it's for the bookmarked companions
 export const getBookmarkedCompanions = async (userId: string) => {
   const supabase = createSupabaseClient();
   const { data, error } = await supabase
     .from("bookmarks")
-    .select(`companions:companion_id (*)`) // Notice the (*) to get all the companion data
-    .eq("user_id", userId);
+    .select(`created_at, companions:companion_id (*)`)
+    .eq("user_id", userId)
+    .order("created_at", { ascending: false });
   if (error) {
     throw new Error(error.message);
   }
-  // We don't need the bookmarks data, so we return only the companions
-  return data.map(({ companions }) => companions);
+  return data.map(({ companions }) => ({ ...companions, bookmarked: true }));
 };
