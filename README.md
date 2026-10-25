@@ -128,6 +128,10 @@ The server actions expect the following Supabase tables:
 
 Foreign-key relationships should allow Supabase queries to resolve `companions:companion_id (*)` from session-history and bookmark records.
 
+For an existing Supabase project, run
+[`supabase/migrations/20261025000000_add_learning_history.sql`](supabase/migrations/20261025000000_add_learning_history.sql)
+in the Supabase SQL editor. It adds the Clerk `user_id` field expected by session history, creates the bookmarks table and foreign-key relationship, adds lookup indexes, and refreshes the PostgREST schema cache.
+
 ## Available scripts
 
 ```bash

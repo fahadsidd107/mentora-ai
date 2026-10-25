@@ -19,9 +19,11 @@ const Profile = async () => {
 
   if (!user) redirect("/sign-in");
 
-  const companions = await getUserCompanions(user.id);
-  const sessionHistory = await getUserSessions(user.id);
-  const bookmarkedCompanions = await getBookmarkedCompanions(user.id);
+  const [companions, sessionHistory, bookmarkedCompanions] = await Promise.all([
+    getUserCompanions(user.id),
+    getUserSessions(user.id),
+    getBookmarkedCompanions(user.id),
+  ]);
 
   return (
     <main className="min-lg:w-3/4">
@@ -43,7 +45,7 @@ const Profile = async () => {
           </div>
         </div>
         <div className="flex gap-4">
-          <div className="border border-foreground rouded-lg p-3 gap-2 flex flex-col h-fit">
+          <div className="border border-foreground rounded-lg p-3 gap-2 flex flex-col h-fit">
             <div className="flex gap-2 items-center">
               <Image
                 src="/icons/check.svg"
@@ -55,7 +57,7 @@ const Profile = async () => {
             </div>
             <div>Lessons completed</div>
           </div>
-          <div className="border border-foreground rouded-lg p-3 gap-2 flex flex-col h-fit">
+          <div className="border border-foreground rounded-lg p-3 gap-2 flex flex-col h-fit">
             <div className="flex gap-2 items-center">
               <Image src="/icons/cap.svg" alt="cap" width={22} height={22} />
               <p className="text-2xl font-bold">{companions.length}</p>
