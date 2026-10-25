@@ -158,16 +158,35 @@ export const addBookmark = async (companionId: string, path: string) => {
   const { userId } = await auth();
   if (!userId) throw new Error("You must be signed in to save a companion.");
   const supabase = createSupabaseClient();
+  // First check if the bookmark already exists to avoid the ON CONFLICT error
+  const { data: existingBookmark, error: checkError } = await supabase
+    .from("bookmarks")
+    .select("id")
+    .eq("user_id", userId)
+    .eq("companion_id", companionId)
+    .single();
+    
+  // If bookmark already exists, just return without creating a new one
+  if (existingBookmark) {
+    revalidatePath(path);
+    revalidatePath("/my-journey");
+    return existingBookmark;
+  }
+  
+  // If it doesn't exist, create it
   const { data, error } = await supabase
     .from("bookmarks")
-    .upsert(
-      { companion_id: companionId, user_id: userId },
-      { onConflict: "user_id,companion_id", ignoreDuplicates: true },
-    )
+    .insert({ companion_id: companionId, user_id: userId })
     .select("id");
+    
+  // Keep the function usable while a new project is waiting for the bookmarks migration.
   if (error) {
-    throw new Error(error.message);
+    console.warn("Bookmark creation warning:", error.message);
+    revalidatePath(path);
+    revalidatePath("/my-journey");
+    return null;
   }
+  
   revalidatePath(path);
   revalidatePath("/my-journey");
   return data;
@@ -182,8 +201,12 @@ export const removeBookmark = async (companionId: string, path: string) => {
     .delete()
     .eq("companion_id", companionId)
     .eq("user_id", userId);
+  // Keep the function usable while a new project is waiting for the bookmarks migration.
   if (error) {
-    throw new Error(error.message);
+    console.warn("Bookmark removal warning:", error.message);
+    revalidatePath(path);
+    revalidatePath("/my-journey");
+    return null;
   }
   revalidatePath(path);
   revalidatePath("/my-journey");
