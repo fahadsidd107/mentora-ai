@@ -17,7 +17,7 @@ This project uses [Clerk](https://clerk.com/) for authentication. Follow these s
    Create a `.env.local` file in the root of the project with the following variables:
    
    ```
-   NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=your_publishable_key_here
+   CLERK_PUBLISHABLE_KEY=your_publishable_key_here
    CLERK_SECRET_KEY=your_secret_key_here
    ```
    
